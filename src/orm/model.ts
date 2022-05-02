@@ -1,11 +1,11 @@
 import { operations } from './operations'
 
-interface ModelConfig<D = any> {
+export interface ModelConfig<D = any> {
   entity: string
   initialData?: D[]
 }
 
-export class QueryModel<D> {
+class QueryModel<D> {
   _entity: string = ''
   fields: D = {} as any
   #data: D[] = []
@@ -19,22 +19,15 @@ export class QueryModel<D> {
     return this.#data
   }
 
-  find() {
+  find(where?: (item: D) => boolean) {
     return new QueryModel({
       entity: this._entity,
-      initialData: operations(this.#data).find(),
+      initialData: operations(this.#data).find(where),
     })
   }
 
   count() {
     return operations(this.#data).count()
-  }
-
-  where(cb: (item: D) => boolean) {
-    return new QueryModel({
-      entity: this._entity,
-      initialData: operations(this.#data).where(cb),
-    })
   }
 
   indexAt(idx: number) {
@@ -50,9 +43,23 @@ export class QueryModel<D> {
       initialData: operations(this.#data).limit(count),
     })
   }
+
+  join<ToJoinData>(
+    toJoinData: ToJoinData[],
+    options: {
+      relation: Partial<Record<keyof D, keyof ToJoinData>>
+      populateKey: keyof D
+      conditional?: 'AND' | 'OR'
+    },
+  ) {
+    return new QueryModel({
+      entity: this._entity,
+      initialData: operations(this.#data).join<ToJoinData>(toJoinData, options),
+    })
+  }
 }
 
-export class CombinedModel<D> extends QueryModel<D> {
+class CombinedModel<D> extends QueryModel<D> {
   _entity: string = ''
   #data: D[] = []
 
@@ -69,10 +76,24 @@ export class CombinedModel<D> extends QueryModel<D> {
     })
   }
 
+  createOrMerge(value: Partial<D>, finder: (item: D) => boolean) {
+    return new CombinedModel({
+      entity: this._entity,
+      initialData: operations(this.#data).createOrMerge(value, finder),
+    })
+  }
+
   createMany(valueMap: D[]) {
     return new CombinedModel({
       entity: this._entity,
       initialData: operations(this.#data).createMany(valueMap),
+    })
+  }
+
+  update(value: Partial<D>, where: (item: D) => boolean) {
+    return new CombinedModel({
+      entity: this._entity,
+      initialData: operations(this.#data).update(value, where),
     })
   }
 
@@ -85,7 +106,6 @@ export class CombinedModel<D> extends QueryModel<D> {
 
   purge() {
     this.#data = []
-    return this.#data
   }
 }
 

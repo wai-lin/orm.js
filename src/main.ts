@@ -1,1 +1,1 @@
-export { Model } from './model'
+export * from './orm/_index'
