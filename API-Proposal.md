@@ -37,8 +37,11 @@ authors.delete((author) => author.id === '2').get()
 authors.purge() // delete all
 
 // RELATIONS
-const books = new Model('books')
-books.create({ id: '1', name: 'The Ending of Life', authorId: '1' })
+const books = new Model('books').create({
+  id: '1',
+  name: 'The Ending of Life',
+  authorId: '1',
+})
 
 authors.join(books, {
   populateTo: 'books',
