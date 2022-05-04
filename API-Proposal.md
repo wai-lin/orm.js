@@ -1,4 +1,23 @@
-### ORM API
+### Stages
+
+- Stage 0 - Still in brain storming
+- Stage 1 - Considering to implement
+- Stage 2 - Implementation started/ongoing (APIs still may change during development)
+- Stage 3 - Near release (alpha)
+
+---
+
+### APIs
+
+- [ ] ORM API `Stage 2`
+- [ ] Validation API `Stage 0`
+- [ ] Storage/Cache API `Stage 0`
+- [ ] Fetch API `Stage 0`
+- [ ] Setup API `Stage 0`
+
+---
+
+### ORM API `Stage 2`
 
 Primitive ORM to use whether in BROWSER or NODE environment.
 
@@ -52,19 +71,19 @@ authors.join(books, {
 
 ---
 
-### Validation API
+### Validation API `Stage 0`
 
 > Should work with existing libraries like `zod`, `yup`, etc...
 
 ```ts
 // API PROPOSAL
 
-class Validation<D> extends Model<D> {
-  constructor(config: ModelConfig<D>) {
-    super(config)
-  }
+class Validation {
+  schema: {
+    [key: string]: z.Schema
+  } = {}
 
-  schema() {}
+  constructor() {}
 }
 
 import * as z from 'zod'
@@ -74,14 +93,86 @@ const UserSchema = z.object({
   name: z.string(),
   age: z.number().optional(),
 })
+
+const userValidator = new Validation({
+  schemas: {
+    create: UserSchema,
+    update: z.partial(UserSchema),
+  },
+})
+
+userValidator.validateWith('schema.create', { id: '1', name: 'Ag Ag', age: 20 })
 ```
 
 ---
 
-### Storage/Cache Layer API
+### Storage/Cache Layer API `Stage 0`
+
+```ts
+
+```
 
 ---
 
-### Fetch API
+### Fetch API `Stage 0`
+
+```ts
+
+```
+
+---
+
+### Setup API `Stage 0`
+
+> Root of all API to connect and match everything in one place.
+
+```ts
+import orm from 'orm.js'
+import {Model} from 'orm.js/model'
+import { LocalStorage } from 'orm.js/storage'
+
+import { User, UserSchema, usersFetchers } from './users'
+import { Employee, EmployeeSchema, employeeFetchers } from './employee'
+
+const myOrm = orm.setup({
+  plugins: [],
+  models: {
+    users: new User()
+    employee: new Employee()
+  },
+  storage: [LocalStorage],
+  validators: {
+    users: {
+      create: UserSchema,
+      update: z.partial(UserSchema)
+    },
+    employee: {
+      create: EmployeeSchema
+    }
+  },
+  fetchers: {
+    users: usersFetchers,
+    employee: employeeFetchers,
+  }
+})
+
+myOrm.users.create({}).
+```
+
+#### Plugin API
+
+```ts
+const sqlite = {
+  beforeOperation() {},
+  afterOperation() {},
+  onOperationExec() {},
+  onOperationSuccess() {},
+  onOperationFailed() {},
+}
+
+orm.setup({
+  plugins: [sqlite],
+})
+```
 
 ---

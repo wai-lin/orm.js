@@ -1,1 +1,1 @@
-export * from './orm/_index'
+export * from './orm/index'
